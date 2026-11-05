@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.darshan.studyplanner'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.darshan.studyplanner"
+        minSdk 24
+        targetSdk 34
+        versionCode 2
+        versionName "2.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            all {
+                systemProperty 'shots.dir', rootProject.file('screenshots').absolutePath
+                testLogging { events "passed", "failed"; exceptionFormat "full" }
+            }
+        }
+    }
+
+    lint {
+        abortOnError false
+        // all-files access is the whole point of this sideloaded app
+        disable 'ScopedStorage', 'LockedOrientationActivity', 'DiscouragedApi'
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.13'
+}
