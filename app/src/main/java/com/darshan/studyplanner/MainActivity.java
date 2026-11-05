@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -54,6 +55,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         st = new Store(this);
+        Sync.handleIntent(this, getIntent());
+        Sync.onChanged = () -> { st = new Store(MainActivity.this); L.gu = st.lang().equals("gu"); render(); };
         L.gu = st.lang().equals("gu");
         tab = getIntent().getIntExtra("tab", 0);
         RingService.channels(this);
@@ -91,6 +94,25 @@ public class MainActivity extends Activity {
 
         setContentView(root);
         render();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Sync.onChanged = () -> { st = new Store(MainActivity.this); L.gu = st.lang().equals("gu"); render(); };
+        if (Sync.signedIn(this)) Sync.syncNow(getApplicationContext());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (Sync.handleIntent(this, intent)) {
+            Toast.makeText(this, L.t("sync_signed"), Toast.LENGTH_LONG).show();
+            tab = 5;
+            Sync.syncNow(getApplicationContext());
+            render();
+        }
     }
 
     @Override
@@ -628,7 +650,31 @@ public class MainActivity extends Activity {
         card.addView(b, lp);
     }
 
+    void syncCard() {
+        LinearLayout c = Ui.card(this);
+        c.addView(Ui.text(this, L.t("sync_title"), 17, INK, true));
+        boolean in = Sync.signedIn(this);
+        String info = in ? String.format(Locale.US, L.t("sync_on"), Sync.email(this)) : L.t("sync_off");
+        c.addView(Ui.text(this, info, 14, MUTED, false));
+        if (in && !Sync.status(this).isEmpty()) c.addView(Ui.text(this, Sync.status(this), 13, MUTED, false));
+        LinearLayout.LayoutParams lp = Ui.match();
+        lp.setMargins(0, Ui.dp(this, 8), 0, 0);
+        if (!in) {
+            c.addView(Ui.button(this, L.t("sync_signin"), CORAL, Color.WHITE, v -> Sync.startLogin(this)), lp);
+        } else {
+            c.addView(Ui.button(this, L.t("sync_now"), CORAL, Color.WHITE, v -> {
+                Toast.makeText(this, L.t("sync_wait"), Toast.LENGTH_SHORT).show();
+                Sync.syncNow(getApplicationContext());
+            }), lp);
+            LinearLayout.LayoutParams lp2 = Ui.match();
+            lp2.setMargins(0, Ui.dp(this, 8), 0, 0);
+            c.addView(Ui.button(this, L.t("sync_out"), 0xFFEEEDF2, INK, v -> { Sync.signOut(this); render(); }), lp2);
+        }
+        content.addView(c);
+    }
+
     void settings() {
+        syncCard();
         // break
         LinearLayout c1 = Ui.card(this);
         c1.addView(Ui.text(this, L.t("set_break"), 17, INK, true));
