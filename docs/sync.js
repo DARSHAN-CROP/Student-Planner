@@ -25,14 +25,14 @@ if (cfg) {
       if (snap.exists()) {
         const remote = JSON.parse(snap.data().json);
         if (remote.updated > mine.updated) window.spApply(remote);
-        else if (remote.updated < mine.updated) F.setDoc(ref, { json: JSON.stringify(mine) });
+        else if (remote.updated < mine.updated) F.setDoc(ref, { json: JSON.stringify(mine) }, { merge: true });
       } else {
-        F.setDoc(ref, { json: JSON.stringify(mine) });
+        F.setDoc(ref, { json: JSON.stringify(mine) }, { merge: true });
       }
     });
     window.spSetPush(() => {
       clearTimeout(timer);
-      timer = setTimeout(() => F.setDoc(ref, { json: JSON.stringify(window.spGet()) }), 600);
+      timer = setTimeout(() => F.setDoc(ref, { json: JSON.stringify(window.spGet()) }, { merge: true }), 600);
     });
   });
 }
