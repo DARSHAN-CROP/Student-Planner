@@ -1,0 +1,19 @@
+name: Publish V2 release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release v2.0 with the APK and the Windows exe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v2.0 >/dev/null 2>&1 || gh release create v2.0 --title "Student Planner V2.0" --notes "V2: Homework with a 1-minute ring 3 times per hour when less than 24 hours are left (quiet hours changeable), changeable break time, break notification when you are at the saved campus, web app and Windows launcher. Install Student_Planner_V2.apk over V1 to keep your data. Tested on a simulated Android 14 only, not yet on a real phone. Google sync is not on yet."
+          gh release upload v2.0 release/Student_Planner_V2.apk release/Student_Planner_Windows.exe --clobber
