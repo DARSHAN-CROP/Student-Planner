@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="gu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student Planner - Google sign in</title>
+<style>body{font-family:system-ui,sans-serif;background:#f6f5f7;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center;color:#1b1b1f}
+.c{background:#fff;border-radius:18px;padding:28px;max-width:360px;text-align:center;box-shadow:0 6px 24px #0001}
+button,a.b{display:block;margin:14px 0 0;padding:14px;border:0;border-radius:12px;background:#ff5a5f;color:#fff;font-size:17px;font-weight:600;text-decoration:none;width:100%;box-sizing:border-box}
+p{color:#6b6b76;font-size:14px}</style></head><body><div class="c">
+<h2>Student Planner</h2><p id="m">Google થી sign in કરો, પછી app માં પાછા જશે.<br>Sign in with Google, then you go back to the app.</p>
+<button id="go">Google થી sign in</button><a class="b" id="open" style="display:none" href="#">App ખોલો / Open app</a></div>
+<script src="firebase-config.js"></script>
+<script type="module">
+const V="10.12.2";
+const cfg=window.FIREBASE_CONFIG;
+const [{initializeApp},A]=await Promise.all([import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`)]);
+const auth=A.getAuth(initializeApp(cfg));
+function done(u){
+  const link="darshanplanner://auth?uid="+encodeURIComponent(u.uid)+"&refresh="+encodeURIComponent(u.refreshToken)+"&email="+encodeURIComponent(u.email||"");
+  document.getElementById("m").textContent="✅ "+(u.email||"")+" — App ખોલો દબાવો / tap Open app";
+  document.getElementById("go").style.display="none";
+  const o=document.getElementById("open"); o.href=link; o.style.display="block";
+  location.href=link;
+}
+document.getElementById("go").onclick=()=>A.signInWithPopup(auth,new A.GoogleAuthProvider()).then(r=>done(r.user)).catch(e=>{document.getElementById("m").textContent=e.message});
+</script></body></html>
