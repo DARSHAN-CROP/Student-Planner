@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#FF5A5F">
+<title>Student Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.png">
+<style>
+:root{--c:#FF5A5F;--ink:#1d2024;--muted:#6b7280;--bg:#f5f6f8;--card:#fff;--ok:#1e9e63;--red:#d64545}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Nirmala UI","Noto Sans Gujarati",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--c);color:#fff;display:flex;align-items:center;gap:10px;padding:12px 16px;position:sticky;top:0;z-index:5}
+header h1{font-size:20px;margin:0;flex:1}
+header button{background:rgba(255,255,255,.25);color:#fff;border:0;border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+nav{display:flex;gap:6px;padding:8px;background:#fff;position:sticky;top:52px;z-index:4;overflow-x:auto;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+nav button{flex:1;min-width:84px;border:0;background:transparent;border-radius:10px;padding:10px 6px;font:inherit;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--c);color:#fff}
+main{max-width:760px;margin:0 auto;padding:14px}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+.big{font-size:18px;font-weight:700}
+.muted{color:var(--muted);font-size:13px}
+.btn{border:0;background:var(--c);color:#fff;border-radius:12px;padding:11px 16px;font:inherit;cursor:pointer;font-weight:600}
+.btn.grey{background:#e9ecef;color:var(--ink)}
+.btn.sm{padding:6px 10px;font-size:14px}
+.x{border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px}
+input,select,textarea{font:inherit;padding:10px;border:1px solid #d6d9de;border-radius:10px;width:100%;background:#fff}
+textarea{min-height:110px}
+.form{display:grid;gap:8px;margin-bottom:12px}
+.days{font-weight:800;font-size:22px;color:var(--c);text-align:center;min-width:64px}
+.days small{display:block;font-size:11px;color:var(--muted);font-weight:500}
+.red .days,.red .big{color:var(--red)}
+.bar{height:9px;background:#e9ecef;border-radius:6px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.alert{background:#fff0f0;border:1px solid #ffc9c9;color:#8a1f1f;border-radius:12px;padding:12px;margin-bottom:12px;font-weight:600}
+.done .big{text-decoration:line-through;color:var(--muted)}
+.timer{font-size:64px;font-weight:800;text-align:center;margin:10px 0;font-variant-numeric:tabular-nums}
+.empty{text-align:center;color:var(--muted);padding:30px 0}
+.pill{display:inline-block;background:#eef;border-radius:20px;padding:2px 10px;font-size:12px;color:#445}
+.topic{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid #f0f1f3}
+.topic input{width:20px;height:20px}
+.lbl{font-size:13px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+<header><h1 id="ttl"></h1><button id="acct"></button><button id="lang"></button></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script src="firebase-config.js"></script>
+<script>
+"use strict";
+var T={
+ app:["Student Planner","Student Planner"],
+ exams:["પરીક્ષા","Exams"],syl:["Syllabus","Syllabus"],hw:["Homework","Homework"],timer:["Timer","Timer"],notes:["નોંધ","Notes"],set:["Settings","Settings"],
+ lang:["English","ગુજરાતી"],
+ add:["ઉમેરો","Add"],save:["સાચવો","Save"],cancel:["રદ","Cancel"],del:["કાઢી નાખવું છે?","Delete this?"],
+ subject:["વિષય","Subject"],date:["તારીખ","Date"],exam_add:["પરીક્ષા ઉમેરો","Add exam"],
+ left:["દિવસ બાકી","days left"],today:["આજે!","Today!"],past:["પૂરી","Over"],
+ no_exam:["હજી કોઈ પરીક્ષા નથી.","No exams yet."],
+ topic:["ટોપિક ઉમેરો","Add topic"],sub_add:["વિષય ઉમેરો","Add subject"],no_syl:["હજી કોઈ વિષય નથી.","No subjects yet."],
+ task:["કામ (શું કરવાનું છે)","Task (what to do)"],due:["છેલ્લી તારીખ અને સમય","Due date and time"],hw_add:["Homework ઉમેરો","Add homework"],
+ no_hw:["કોઈ Homework નથી.","No homework."],pending:["બાકી","Pending"],finished:["પૂરા થયેલા","Completed"],
+ hw_alert:["⚠ 24 કલાકમાં પૂરું કરવાનું Homework:","⚠ Homework due within 24 hours:"],overdue:["મોડું!","Overdue!"],
+ hours_left:["કલાક બાકી","h left"],
+ start:["શરૂ","Start"],pause:["અટકાવો","Pause"],reset:["ફરી","Reset"],focus:["વાંચવાનો સમય","Study time"],brk:["આરામ","Break"],
+ title:["શીર્ષક","Title"],body:["નોંધ લખો","Write note"],note_add:["નોંધ ઉમેરો","Add note"],no_note:["હજી કોઈ નોંધ નથી.","No notes yet."],
+ brk_set:["કોલેજ બ્રેક નો સમય","College break time"],brk_start:["બ્રેક શરૂ","Break start"],brk_min:["બ્રેક કેટલી મિનિટ","Break minutes"],
+ brk_note:["આ સમય Android app માં બ્રેક નોટિફિકેશન માટે વપરાશે.","This time is used by the Android app for break notifications."],
+ signin:["Google થી sign in","Sign in with Google"],signout:["Sign out","Sign out"],
+ sync_off:["Online sync હજી ચાલુ નથી. (Firebase સેટઅપ બાકી છે) ડેટા આ ડિવાઇસમાં સચવાય છે.","Online sync is not on yet (Firebase setup pending). Data is saved on this device."],
+ sync_on:["Sync ચાલુ: ","Sync on: "],synced:["સિંક થયું","Synced"],
+ export:["ડેટા ફાઇલમાં સાચવો (backup)","Save data to file (backup)"],import:["ફાઇલમાંથી ડેટા લાવો","Load data from file"],
+ about:["Darshankumar Savsani - DARSHAN CORPORATION","Darshankumar Savsani - DARSHAN CORPORATION"]
+};
+var LS="sp_data_v2", S, gu=true, tab="exams", firebaseUser=null, push=function(){};
+function t(k){var v=T[k];return v?v[gu?0:1]:k}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function blank(){return{exams:[],subjects:[],homework:[],notes:[],settings:{lang:"gu",breakStart:"11:00",breakMin:30},updated:0}}
+function load(){try{S=JSON.parse(localStorage.getItem(LS))||blank()}catch(e){S=blank()}
+ ["exams","subjects","homework","notes"].forEach(function(k){if(!Array.isArray(S[k]))S[k]=[]});
+ S.settings=Object.assign(blank().settings,S.settings||{});gu=S.settings.lang!=="en"}
+function save(){S.updated=Date.now();localStorage.setItem(LS,JSON.stringify(S));push()}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function $(s){return document.querySelector(s)}
+function daysLeft(d){var a=new Date(d+"T00:00:00"),n=new Date();n.setHours(0,0,0,0);return Math.round((a-n)/864e5)}
+function fmtDate(d){return new Date(d).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"})}
+function fmtDT(d){var x=new Date(d);return x.toLocaleDateString("en-GB",{day:"2-digit",month:"short"})+", "+x.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}
+function ask(){return confirm(t("del"))}
+
+var tabs=["exams","syl","hw","timer","notes","set"];
+function nav(){var n=$("#nav");n.innerHTML="";tabs.forEach(function(k){var b=document.createElement("button");b.textContent=t(k);b.className=(k===tab?"on":"");b.onclick=function(){tab=k;render()};n.appendChild(b)})}
+function render(){document.documentElement.lang=gu?"gu":"en";$("#ttl").textContent=t("app");$("#lang").textContent=t("lang");
+ $("#acct").textContent=firebaseUser?(firebaseUser.displayName||firebaseUser.email||"✔"):t("signin");nav();
+ var m=$("#main");m.innerHTML="";({exams:vExams,syl:vSyl,hw:vHw,timer:vTimer,notes:vNotes,set:vSet})[tab](m)}
+function el(h){var d=document.createElement("div");d.innerHTML=h;return d.firstElementChild}
+
+function vExams(m){
+ var f=el('<div class="card form"><input id="es" placeholder="'+t("subject")+'"><input id="ed" type="date"><button class="btn">'+t("exam_add")+'</button></div>');
+ f.querySelector("button").onclick=function(){var s=f.querySelector("#es").value.trim(),d=f.querySelector("#ed").value;if(!s||!d)return;S.exams.push({id:id(),subject:s,date:d});save();render()};m.appendChild(f);
+ if(!S.exams.length){m.appendChild(el('<div class="empty">'+t("no_exam")+'</div>'));return}
+ S.exams.slice().sort(function(a,b){return a.date<b.date?-1:1}).forEach(function(e){var n=daysLeft(e.date);
+  var c=el('<div class="card row '+(n>=0&&n<=3?"red":"")+'"><div class="days">'+(n<0?"-":(n===0?"0":n))+'<small>'+(n<0?t("past"):(n===0?t("today"):t("left")))+'</small></div><div class="grow"><div class="big">'+esc(e.subject)+'</div><div class="muted">'+fmtDate(e.date)+'</div></div><button class="x">✕</button></div>');
+  c.querySelector(".x").onclick=function(){if(ask()){S.exams=S.exams.filter(function(x){return x.id!==e.id});save();render()}};m.appendChild(c)})}
+
+function vSyl(m){
+ var f=el('<div class="card form"><input id="ss" placeholder="'+t("subject")+'"><button class="btn">'+t("sub_add")+'</button></div>');
+ f.querySelector("button").onclick=function(){var s=f.querySelector("#ss").value.trim();if(!s)return;S.subjects.push({id:id(),name:s,topics:[]});save();render()};m.appendChild(f);
+ if(!S.subjects.length){m.appendChild(el('<div class="empty">'+t("no_syl")+'</div>'));return}
+ S.subjects.forEach(function(s){var done=s.topics.filter(function(x){return x.done}).length,pc=s.topics.length?Math.round(done*100/s.topics.length):0;
+  var c=el('<div class="card"><div class="row"><div class="grow big">'+esc(s.name)+'</div><span class="pill">'+pc+'%</span><button class="x">✕</button></div><div class="bar"><i style="width:'+pc+'%"></i></div><div class="tl"></div><div class="row" style="margin-top:8px"><input class="nt" placeholder="'+t("topic")+'"><button class="btn sm">+</button></div></div>');
+  c.querySelector(".x").onclick=function(){if(ask()){S.subjects=S.subjects.filter(function(x){return x.id!==s.id});save();render()}};
+  var tl=c.querySelector(".tl");s.topics.forEach(function(tp,i){var r=el('<div class="topic"><input type="checkbox" '+(tp.done?"checked":"")+'><span class="grow">'+esc(tp.t)+'</span><button class="x">✕</button></div>');
+   r.querySelector("input").onchange=function(e){tp.done=e.target.checked;save();render()};r.querySelector(".x").onclick=function(){s.topics.splice(i,1);save();render()};tl.appendChild(r)});
+  c.querySelector(".btn").onclick=function(){var v=c.querySelector(".nt").value.trim();if(!v)return;s.topics.push({t:v,done:false});save();render()};m.appendChild(c)})}
+
+function vHw(m){
+ var soon=S.homework.filter(function(h){var ms=new Date(h.due)-Date.now();return !h.done&&ms<864e5});
+ if(soon.length)m.appendChild(el('<div class="alert">'+t("hw_alert")+'<br>'+soon.map(function(h){return"• "+esc(h.subject)+": "+esc(h.task)}).join("<br>")+'</div>'));
+ var f=el('<div class="card form"><input id="hs" placeholder="'+t("subject")+'"><input id="ht" placeholder="'+t("task")+'"><div class="lbl">'+t("due")+'</div><input id="hd" type="datetime-local"><button class="btn">'+t("hw_add")+'</button></div>');
+ f.querySelector("button").onclick=function(){var s=f.querySelector("#hs").value.trim(),k=f.querySelector("#ht").value.trim(),d=f.querySelector("#hd").value;if(!s||!k||!d)return;S.homework.push({id:id(),subject:s,task:k,due:d,done:false});save();render()};m.appendChild(f);
+ if(!S.homework.length){m.appendChild(el('<div class="empty">'+t("no_hw")+'</div>'));return}
+ function item(h){var ms=new Date(h.due)-Date.now(),hrs=Math.floor(ms/36e5),late=ms<0,hot=!h.done&&ms<864e5;
+  var tag=h.done?"":(late?t("overdue"):(hrs<24?hrs+" "+t("hours_left"):Math.ceil(ms/864e5)+" "+t("left")));
+  var c=el('<div class="card row '+(hot?"red":"")+(h.done?" done":"")+'"><input type="checkbox" style="width:22px;height:22px" '+(h.done?"checked":"")+'><div class="grow"><div class="big">'+esc(h.task)+'</div><div class="muted">'+esc(h.subject)+' • '+fmtDT(h.due)+'</div></div><span class="pill" style="'+(hot?"background:#ffe0e0;color:#a22":"")+'">'+tag+'</span><button class="x">✕</button></div>');
+  c.querySelector("input").onchange=function(e){h.done=e.target.checked;save();render()};
+  c.querySelector(".x").onclick=function(){if(ask()){S.homework=S.homework.filter(function(x){return x.id!==h.id});save();render()}};return c}
+ var p=S.homework.filter(function(h){return!h.done}).sort(function(a,b){return a.due<b.due?-1:1}),d=S.homework.filter(function(h){return h.done});
+ if(p.length){m.appendChild(el('<div class="lbl">'+t("pending")+' ('+p.length+')</div>'));p.forEach(function(h){m.appendChild(item(h))})}
+ if(d.length){m.appendChild(el('<div class="lbl">'+t("finished")+' ('+d.length+')</div>'));d.forEach(function(h){m.appendChild(item(h))})}}
+
+var TM={mode:"focus",left:25*60,run:false,end:0,iv:null};
+function beep(){try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();setTimeout(function(){o.stop()},700)}catch(e){}}
+function tick(){if(!TM.run)return;TM.left=Math.max(0,Math.round((TM.end-Date.now())/1000));paint();
+ if(TM.left<=0){beep();TM.mode=TM.mode==="focus"?"break":"focus";TM.left=(TM.mode==="focus"?25:5)*60;TM.end=Date.now()+TM.left*1000;if(tab==="timer")render()}}
+function paint(){var e=$("#tm");if(e){var mm=String(Math.floor(TM.left/60)).padStart(2,"0"),ss=String(TM.left%60).padStart(2,"0");e.textContent=mm+":"+ss}}
+function vTimer(m){var c=el('<div class="card"><div class="muted" style="text-align:center">'+(TM.mode==="focus"?t("focus")+" 25":t("brk")+" 5")+'</div><div class="timer" id="tm"></div><div class="row" style="justify-content:center"><button class="btn" id="go"></button><button class="btn grey" id="rs">'+t("reset")+'</button></div></div>');
+ var go=c.querySelector("#go");go.textContent=TM.run?t("pause"):t("start");
+ go.onclick=function(){if(TM.run){TM.run=false}else{TM.run=true;TM.end=Date.now()+TM.left*1000}render()};
+ c.querySelector("#rs").onclick=function(){TM.run=false;TM.mode="focus";TM.left=25*60;render()};m.appendChild(c);paint()}
+setInterval(tick,500);
+
+function vNotes(m){
+ var f=el('<div class="card form"><input id="nt" placeholder="'+t("title")+'"><textarea id="nb" placeholder="'+t("body")+'"></textarea><button class="btn">'+t("note_add")+'</button></div>');
+ f.querySelector("button").onclick=function(){var a=f.querySelector("#nt").value.trim(),b=f.querySelector("#nb").value.trim();if(!a&&!b)return;S.notes.unshift({id:id(),title:a,body:b});save();render()};m.appendChild(f);
+ if(!S.notes.length){m.appendChild(el('<div class="empty">'+t("no_note")+'</div>'));return}
+ S.notes.forEach(function(n){var c=el('<div class="card"><div class="row"><div class="grow big">'+esc(n.title||"-")+'</div><button class="x">✕</button></div><div style="white-space:pre-wrap;margin-top:6px">'+esc(n.body)+'</div></div>');
+  c.querySelector(".x").onclick=function(){if(ask()){S.notes=S.notes.filter(function(x){return x.id!==n.id});save();render()}};m.appendChild(c)})}
+
+function vSet(m){
+ var c=el('<div class="card form"><div class="big">'+t("brk_set")+'</div><div class="lbl">'+t("brk_start")+'</div><input id="bs" type="time" value="'+S.settings.breakStart+'"><div class="lbl">'+t("brk_min")+'</div><input id="bm" type="number" min="5" max="180" value="'+S.settings.breakMin+'"><div class="muted">'+t("brk_note")+'</div><button class="btn">'+t("save")+'</button></div>');
+ c.querySelector("button").onclick=function(){S.settings.breakStart=c.querySelector("#bs").value||"11:00";S.settings.breakMin=Math.max(5,parseInt(c.querySelector("#bm").value,10)||30);save();render()};m.appendChild(c);
+ var a=el('<div class="card form"><div class="big">Google sync</div><div class="muted" id="sy"></div></div>');
+ a.querySelector("#sy").textContent=window.SYNC_READY?(firebaseUser?t("sync_on")+(firebaseUser.email||""):t("signin")):t("sync_off");m.appendChild(a);
+ var b=el('<div class="card form"><button class="btn grey" id="ex">'+t("export")+'</button><button class="btn grey" id="im">'+t("import")+'</button><input id="fi" type="file" accept="application/json" style="display:none"></div>');
+ b.querySelector("#ex").onclick=function(){var u=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:"application/json"})),l=document.createElement("a");l.href=u;l.download="student-planner-backup.json";l.click()};
+ b.querySelector("#im").onclick=function(){b.querySelector("#fi").click()};
+ b.querySelector("#fi").onchange=function(e){var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(d&&d.exams){S=d;save();load();render()}}catch(x){alert("Invalid file")}};if(e.target.files[0])r.readAsText(e.target.files[0])};m.appendChild(b);
+ m.appendChild(el('<div class="muted" style="text-align:center;margin-top:14px">'+t("about")+'</div>'))}
+
+$("#lang").onclick=function(){gu=!gu;S.settings.lang=gu?"gu":"en";save();render()};
+$("#acct").onclick=function(){if(window.SYNC_READY){firebaseUser?window.spSignOut():window.spSignIn()}else{tab="set";render()}};
+window.spApply=function(remote){ if(remote&&remote.updated>S.updated){S=remote;S.settings=Object.assign(blank().settings,S.settings||{});gu=S.settings.lang!=="en";localStorage.setItem(LS,JSON.stringify(S));render()}};
+window.spGet=function(){return S};
+window.spUser=function(u){firebaseUser=u;render()};
+window.spSetPush=function(f){push=f};
+load();render();
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){})}
+</script>
+<script type="module" src="sync.js"></script>
+</body>
+</html>
