@@ -1,0 +1,19 @@
+name: Publish V2.1 release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release v2.1 with the APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v2.1 >/dev/null 2>&1 || gh release create v2.1 --title "Student Planner V2.1" --notes "V2.1: Google sync in the Android app (Settings, Sign in with Google). Same data as the web app and the Windows launcher. Installs over V2 and keeps your data. Tested with a simulated Android 14 only; the sign-in itself needs your real phone."
+          gh release upload v2.1 release/Student_Planner_V2.1.apk --clobber
