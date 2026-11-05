@@ -10,6 +10,14 @@ final class L {
     private static final Map<String, String[]> M = new HashMap<>();
     private static void p(String k, String g, String e) { M.put(k, new String[]{g, e}); }
     static {
+        p("sync_title", "Google sync", "Google sync");
+        p("sync_on", "જોડાયેલ: %s", "Signed in: %s");
+        p("sync_off", "Google થી sign in કરો તો ફોન અને PC પર એક જ ડેટા દેખાશે.", "Sign in with Google to see the same data on phone and PC.");
+        p("sync_signin", "Google થી sign in", "Sign in with Google");
+        p("sync_now", "હમણાં sync કરો", "Sync now");
+        p("sync_out", "Sign out", "Sign out");
+        p("sync_wait", "sync થઈ રહ્યું છે…", "Syncing…");
+        p("sync_signed", "Sign in થઈ ગયું ✅", "Signed in ✅");
         p("app", "વિદ્યાર્થી પ્લાનર", "Student Planner");
         p("tab_exams", "પરીક્ષા", "Exams");
         p("tab_syllabus", "અભ્યાસક્રમ", "Syllabus");
