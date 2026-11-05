@@ -1,0 +1,19 @@
+name: Publish Windows release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release v2.0-web with the Windows exe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v2.0-web >/dev/null 2>&1 || gh release create v2.0-web --title "Student Planner Web + Windows (V2 preview)" --notes "Web app: https://1darshankumarsavsani-blip.github.io/Student-Planner/ . Student_Planner_Windows.exe opens that web app in its own window (needs Microsoft Edge or Google Chrome and internet). Homework added. Google sync comes after the Firebase setup. The exe was built on Linux and not yet run on a real Windows PC."
+          gh release upload v2.0-web release/Student_Planner_Windows.exe --clobber
