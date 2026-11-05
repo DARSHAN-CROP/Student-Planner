@@ -1,25 +1,16 @@
 # Student Planner (વિદ્યાર્થી પ્લાનર)
 
-Offline Android app in Gujarati and English by Darshankumar Savsani (DARSHAN CORPORATION).
+Student planner in Gujarati and English by Darshankumar Savsani (DARSHAN CORPORATION): exam countdown, syllabus checklist with progress, Homework with rings, study timer, notes, break time, and Google sync between phone and PC.
 
-Version 1: exam countdown, syllabus checklist with progress, 25/5 study timer, notes. Data stays on the phone.
+**Website (works on phone and PC, no install):** https://1darshankumarsavsani-blip.github.io/Student-Planner/
 
-Install: download `release/Student_Planner_V1.apk` on an Android phone and allow "install unknown apps".
-Source code: `Student_Planner_source.zip` (open in Android Studio, or build with Gradle).
+## Latest: Android V2.1
 
-Honest note: tested on a simulated Android 14 phone, not yet on a real phone. The timer stops if the app is closed.
+- Download `Student_Planner_V2.1.apk` from the latest release (Releases, on the right) and allow "install unknown apps". It installs over older versions and keeps your data.
+- Sign in with Google in Settings to see the same Homework, exams and notes in the app and on the website.
+- Homework rings for 1 minute at :00, :20 and :40 every hour when less than 24 hours are left (quiet hours changeable), break-time setting, and a break notification when you are at the saved campus.
+- Windows: open the website in Edge or Chrome (or use the small launcher `Student_Planner_Windows.exe` from release v2.0).
 
-## Version 2.0
+Honest note: tested on a simulated Android 14 phone and by the author on his own phone. Battery saver can delay rings.
 
-- Web app (works on phone and PC, no install): https://1darshankumarsavsani-blip.github.io/Student-Planner/
-- `release/Student_Planner_Windows.exe`: opens the web app in its own window (Microsoft Edge or Chrome needed).
-- New: Homework with a red warning when less than 24 hours are left, and a break-time setting.
-- Google sign-in and online sync: the code is ready, it turns on after a Firebase project is configured in `docs/firebase-config.js`.
-- Not yet: the homework rings, break notification and campus location in the Android app (planned).
-
-## Android V2 (release v2.0)
-
-- Homework list. When less than 24 hours are left the phone rings for 1 minute at :00, :20 and :40 of every hour (3 times per hour). Quiet hours (default 22:00-07:00) and break time are changeable in Settings.
-- Break notification once a day at break time, only if you are at the campus saved with the "This is the campus" button.
-- Settings has a test ring and permission buttons. Allow alarms, notifications and Location "all the time".
-- Honest note: tested on a simulated Android 14 phone, not yet on a real phone. Battery saver can delay rings.
+Older versions are on the Releases page. Source code is in `app/` (Java, Android) and `docs/` (website).
