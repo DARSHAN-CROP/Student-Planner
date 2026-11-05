@@ -13,13 +13,25 @@ import org.json.JSONObject;
 final class Store {
     private final SharedPreferences sp;
     private JSONObject d;
+    private final Context ctx;
 
     Store(Context c) {
+        ctx = c.getApplicationContext();
         sp = c.getSharedPreferences("data_store", Context.MODE_PRIVATE);
         try { d = new JSONObject(sp.getString("data", "{}")); } catch (JSONException e) { d = new JSONObject(); }
     }
 
-    void save() { sp.edit().putString("data", d.toString()).apply(); }
+    Context context() { return ctx; }
+
+    /** Write without marking as a new change (used by sync and for local-only data). */
+    void saveRaw() { sp.edit().putString("data", d.toString()).apply(); }
+
+    /** A real change by the user: remember when, then sync to the Google account in a few seconds. */
+    void save() {
+        try { d.put("updated", (double) System.currentTimeMillis()); } catch (JSONException ignored) { }
+        saveRaw();
+        Sync.poke(ctx);
+    }
 
     JSONArray arr(String k) {
         JSONArray a = d.optJSONArray(k);
@@ -40,7 +52,7 @@ final class Store {
 
     void setLang(String l) {
         try { d.put("lang", l); } catch (JSONException ignored) { }
-        save();
+        saveRaw();
     }
 
     private static String today() { return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()); }
@@ -56,6 +68,6 @@ final class Store {
             if (s == null) { s = new JSONObject(); d.put("sessions", s); }
             s.put(today(), s.optInt(today(), 0) + 1);
         } catch (JSONException ignored) { }
-        save();
+        saveRaw();
     }
 }
