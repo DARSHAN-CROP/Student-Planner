@@ -1,0 +1,19 @@
+name: Publish release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release v1.0 with the APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v1.0 >/dev/null 2>&1 || gh release create v1.0 --title "Student Planner V1.0" --notes "Version 1: exams countdown, syllabus checklist, study timer, notes. Gujarati and English, works offline. Download the APK below and install it on an Android phone. Tested on a simulated Android 14, not yet on a real phone."
+          gh release upload v1.0 release/Student_Planner_V1.apk --clobber
