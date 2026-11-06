@@ -29,9 +29,9 @@ final class Ui {
     static TextView text(Context c, String s, int sp, int color, boolean bold) {
         TextView t = new TextView(c);
         t.setText(s);
-        t.setTextSize(sp);
+        t.setTextSize(sp * Theme.scale);
         t.setTextColor(color);
-        if (bold) t.setTypeface(Typeface.DEFAULT_BOLD);
+        if (bold || Theme.bold) t.setTypeface(Typeface.DEFAULT_BOLD);
         return t;
     }
 
@@ -40,7 +40,7 @@ final class Ui {
         b.setText(s);
         b.setAllCaps(false);
         b.setTextColor(fg);
-        b.setTextSize(15);
+        b.setTextSize(15 * Theme.scale);
         b.setTypeface(Typeface.DEFAULT_BOLD);
         b.setBackground(box(c, bg, 12, 0));
         b.setPadding(dp(c, 14), dp(c, 8), dp(c, 14), dp(c, 8));
@@ -53,7 +53,7 @@ final class Ui {
     static LinearLayout card(Context c) {
         LinearLayout l = new LinearLayout(c);
         l.setOrientation(LinearLayout.VERTICAL);
-        l.setBackground(box(c, Color.WHITE, 16, 0xFFE6E3EA));
+        l.setBackground(box(c, Theme.card, 16, Theme.stroke));
         l.setPadding(dp(c, 14), dp(c, 12), dp(c, 14), dp(c, 12));
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
