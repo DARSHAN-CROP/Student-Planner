@@ -109,7 +109,7 @@ public class MainActivity extends Activity {
         setIntent(intent);
         if (Sync.handleIntent(this, intent)) {
             Toast.makeText(this, L.t("sync_signed"), Toast.LENGTH_LONG).show();
-            tab = 5;
+            tab = 6;
             Sync.syncNow(getApplicationContext());
             render();
         }
@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
         title.setText(L.t("app"));
         langBtn.setText(L.t("lang_btn"));
         nav.removeAllViews();
-        String[] keys = {"tab_exams", "tab_syllabus", "tab_homework", "tab_timer", "tab_notes", "tab_settings"};
+        String[] keys = {"tab_exams", "tab_syllabus", "tab_homework", "tab_timer", "tab_notes", "tab_more", "tab_settings"};
         for (int i = 0; i < keys.length; i++) {
             final int idx = i;
             boolean sel = i == tab;
@@ -147,6 +147,7 @@ public class MainActivity extends Activity {
         else if (tab == 2) homework();
         else if (tab == 3) timer();
         else if (tab == 4) notes();
+        else if (tab == 5) PlanTabs.build(this);
         else settings();
     }
 
