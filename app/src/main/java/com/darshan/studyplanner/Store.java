@@ -42,6 +42,7 @@ final class Store {
         return a;
     }
 
+    JSONObject getObj(String k) { return d.optJSONObject(k); }
     int getInt(String k, int def) { return d.optInt(k, def); }
     String getS(String k, String def) { return d.optString(k, def); }
     double getD(String k, double def) { return d.optDouble(k, def); }
