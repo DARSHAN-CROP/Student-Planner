@@ -70,7 +70,7 @@ final class PlanTabs {
         for (int i = 0; i < keys.length; i++) {
             final int idx = i;
             boolean sel = i == sub;
-            Button b = Ui.button(a, L.t(keys[i]), sel ? MainActivity.CORAL : 0xFFEEEDF2, sel ? Color.WHITE : MainActivity.INK, v -> { sub = idx; a.render(); });
+            Button b = Ui.button(a, L.t(keys[i]), sel ? MainActivity.CORAL : Theme.grey, sel ? Color.WHITE : MainActivity.INK, v -> { sub = idx; a.render(); });
             LinearLayout.LayoutParams lp = Ui.weight(1);
             lp.setMargins(Ui.dp(a, 3), 0, Ui.dp(a, 3), Ui.dp(a, 10));
             bar.addView(b, lp);
@@ -107,7 +107,7 @@ final class PlanTabs {
         int[] order = {1, 2, 3, 4, 5, 6, 0};
         for (final int d : order) {
             boolean sel = d == day;
-            Button b = Ui.button(a, L.t("d" + d), sel ? MainActivity.CORAL : 0xFFEEEDF2, sel ? Color.WHITE : MainActivity.INK, v -> { day = d; a.render(); });
+            Button b = Ui.button(a, L.t("d" + d), sel ? MainActivity.CORAL : Theme.grey, sel ? Color.WHITE : MainActivity.INK, v -> { day = d; a.render(); });
             b.setTextSize(12);
             b.setPadding(Ui.dp(a, 1), Ui.dp(a, 8), Ui.dp(a, 1), Ui.dp(a, 8));
             LinearLayout.LayoutParams lp = Ui.weight(1);
@@ -162,8 +162,8 @@ final class PlanTabs {
         final EditText subj = a.input(L.t("tt_sub"), false);
         final EditText room = a.input(L.t("tt_room"), false);
         final int[] t = {9 * 60, 10 * 60};
-        final Button b1 = Ui.button(a, "", 0xFFEEEDF2, MainActivity.INK, null);
-        final Button b2 = Ui.button(a, "", 0xFFEEEDF2, MainActivity.INK, null);
+        final Button b1 = Ui.button(a, "", Theme.grey, MainActivity.INK, null);
+        final Button b2 = Ui.button(a, "", Theme.grey, MainActivity.INK, null);
         final Runnable upd = () -> { b1.setText(L.t("tt_start") + " " + MainActivity.hm(t[0])); b2.setText(L.t("tt_end") + " " + MainActivity.hm(t[1])); };
         upd.run();
         b1.setOnClickListener(v -> new TimePickerDialog(a, (view, hh, mi) -> { t[0] = hh * 60 + mi; upd.run(); }, t[0] / 60, t[0] % 60, true).show());
@@ -218,7 +218,7 @@ final class PlanTabs {
             a.st.save();
             a.render();
         })));
-        Button tb = Ui.button(a, String.format(Locale.US, L.t("at_target"), tg), 0xFFEEEDF2, MainActivity.INK, v -> {
+        Button tb = Ui.button(a, String.format(Locale.US, L.t("at_target"), tg), Theme.grey, MainActivity.INK, v -> {
             int n = tg >= 95 ? 60 : tg + 5;
             try {
                 JSONObject s = a.st.getObj("settings");
@@ -257,7 +257,7 @@ final class PlanTabs {
             card.addView(row);
             LinearLayout btns = Ui.row(a);
             Button yes = Ui.button(a, L.t("at_p"), MainActivity.GREEN, Color.WHITE, v -> mark(a, o, true));
-            Button no = Ui.button(a, L.t("at_a"), 0xFFEEEDF2, MainActivity.INK, v -> mark(a, o, false));
+            Button no = Ui.button(a, L.t("at_a"), Theme.grey, MainActivity.INK, v -> mark(a, o, false));
             LinearLayout.LayoutParams l1 = Ui.weight(1), l2 = Ui.weight(1);
             l1.setMargins(0, Ui.dp(a, 8), Ui.dp(a, 4), 0);
             l2.setMargins(Ui.dp(a, 4), Ui.dp(a, 8), 0, 0);

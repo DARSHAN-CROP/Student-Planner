@@ -43,6 +43,20 @@ textarea{min-height:110px}
 .topic{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid #f0f1f3}
 .topic input{width:20px;height:20px}
 .lbl{font-size:13px;color:var(--muted);margin-top:6px}
+
+body.dark{--bg:#111215;--card:#1d1f24;--ink:#eceef1;--muted:#9aa0a8}
+body.dark nav{background:#1d1f24}
+body.dark input,body.dark select,body.dark textarea{background:#15171a;color:#eceef1;border-color:#3a3d44}
+body.dark .btn.grey{background:#2b2e34;color:#eceef1}
+body.dark .bar{background:#2b2e34}
+body.dark .pill{background:#2b2e34;color:#cfd3d9}
+body.dark .alert{background:#3a1d1d;border-color:#6b2c2c;color:#ffb4b4}
+body.dark .topic{border-color:#2b2e34}
+body.bold,body.bold input,body.bold select,body.bold textarea,body.bold button{font-weight:700}
+body.hc{--muted:#3a3f47}body.dark.hc{--muted:#d5d9df}
+body.hc .muted,body.hc .lbl{font-weight:600}
+.sw{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0}.sw button{width:38px;height:38px;border-radius:50%;border:3px solid transparent;cursor:pointer;padding:0}.sw button.on{border-color:var(--ink)}
+.chk{display:flex;align-items:center;gap:10px;margin:8px 0}.chk input{width:22px;height:22px}
 </style>
 </head>
 <body>
@@ -77,6 +91,7 @@ var T={
  d0:["રવિ","Sun"],d1:["સોમ","Mon"],d2:["મંગળ","Tue"],d3:["બુધ","Wed"],d4:["ગુરુ","Thu"],d5:["શુક્ર","Fri"],d6:["શનિ","Sat"],
  att:["હાજરી","Attendance"],at_sub:["વિષય","Subject"],at_p:["હાજર","Present"],at_a:["ગેરહાજર","Absent"],at_target:["લક્ષ્ય હાજરી %","Target %"],at_need:["લક્ષ્ય માટે હજી %d ક્લાસ જરૂરી","Need %d more classes to reach target"],at_can:["%d ક્લાસ ચૂકી શકો","You can miss %d classes"],at_none:["હજી કોઈ વિષય નથી.","No subjects yet."],at_over:["કુલ હાજરી","Overall"],at_add:["વિષય ઉમેરો","Add subject"],
  mk:["માર્ક્સ","Marks"],mk_sub:["વિષય","Subject"],mk_got:["મળેલા માર્ક્સ","Marks obtained"],mk_max:["કુલ માર્ક્સ","Out of"],mk_cr:["ક્રેડિટ (વૈકલ્પિક)","Credits (optional)"],mk_gp:["ગ્રેડ પોઇન્ટ 0-10 (વૈકલ્પિક)","Grade point 0-10 (optional)"],mk_add:["વિષય ઉમેરો","Add subject"],mk_pct:["કુલ ટકા","Overall %"],mk_cgpa:["CGPA","CGPA"],mk_none:["હજી કોઈ માર્ક્સ નથી.","No marks yet."],mk_hint:["CGPA માટે ક્રેડિટ અને ગ્રેડ પોઇન્ટ બંને ભરો.","Fill both credits and grade point for CGPA."],
+ ap:["દેખાવ","Appearance"],ap_color:["થીમ રંગ","Theme colour"],ap_dark:["ડાર્ક મોડ","Dark mode"],ap_size:["અક્ષરનું કદ","Text size"],ap_bold:["બોલ્ડ અક્ષર","Bold text"],ap_hc:["વધુ કોન્ટ્રાસ્ટ (સરળ વાંચન)","High contrast (easier to read)"],ap_s0:["નાનું","Small"],ap_s1:["સામાન્ય","Normal"],ap_s2:["મોટું","Large"],ap_s3:["ખૂબ મોટું","Extra large"],ap_reset:["ડિફૉલ્ટ પર પાછું","Reset to default"],
 about:["Darshankumar Savsani - DARSHAN CORPORATION","Darshankumar Savsani - DARSHAN CORPORATION"]
 };
 var LS="sp_data_v2", S, gu=true, tab="exams", firebaseUser=null, push=function(){};
@@ -96,7 +111,7 @@ function ask(){return confirm(t("del"))}
 
 var tabs=["exams","tt","att","mk","syl","hw","timer","notes","set"];
 function nav(){var n=$("#nav");n.innerHTML="";tabs.forEach(function(k){var b=document.createElement("button");b.textContent=t(k);b.className=(k===tab?"on":"");b.onclick=function(){tab=k;render()};n.appendChild(b)})}
-function render(){document.documentElement.lang=gu?"gu":"en";$("#ttl").textContent=t("app");$("#lang").textContent=t("lang");
+function render(){document.documentElement.lang=gu?"gu":"en";applyTheme();$("#ttl").textContent=t("app");$("#lang").textContent=t("lang");
  $("#acct").textContent=firebaseUser?(firebaseUser.displayName||firebaseUser.email||"✔"):t("signin");nav();
  var m=$("#main");m.innerHTML="";({exams:vExams,tt:vTT,att:vAtt,mk:vMarks,syl:vSyl,hw:vHw,timer:vTimer,notes:vNotes,set:vSet})[tab](m)}
 function el(h){var d=document.createElement("div");d.innerHTML=h;return d.firstElementChild}
@@ -194,6 +209,27 @@ function vMarks(m){
   var c=el('<div class="card"><div class="row"><div class="grow"><div class="big">'+esc(x.subject)+'</div><div class="muted">'+x.got+' / '+x.max+(x.credits?' · '+x.credits+' cr':"")+(x.gp!=null?' · GP '+x.gp:"")+'</div></div><div class="days">'+p+'%</div><button class="x">✕</button></div><div class="bar"><i style="width:'+Math.min(100,p)+'%"></i></div></div>');
   c.querySelector(".x").onclick=function(){if(ask()){S.marks=S.marks.filter(function(y){return y.id!==x.id});save();render()}};m.appendChild(c)})}
 
+
+var COLORS=["#FF5A5F","#2F6FED","#1E9E63","#7C4DFF","#F57C00","#00897B","#E91E63","#2B2B2B"],ZOOMS=[0.9,1,1.15,1.3];
+function applyTheme(){var s=S.settings||{},c=s.color||"#FF5A5F";
+ document.documentElement.style.setProperty("--c",c);var mt=document.querySelector("meta[name=theme-color]");if(mt)mt.content=c;
+ document.body.classList.toggle("dark",!!s.dark);document.body.classList.toggle("bold",!!s.bold);document.body.classList.toggle("hc",!!s.hc);
+ var z=ZOOMS[s.size==null?1:s.size]||1;["main","nav"].forEach(function(q){var e=document.querySelector(q);if(e)e.style.zoom=z})}
+function appearanceCard(){
+ var s=S.settings,cur=s.color||"#FF5A5F",h='<div class="card form"><div class="big">'+t("ap")+'</div><div class="lbl">'+t("ap_color")+'</div><div class="sw">';
+ COLORS.forEach(function(c){h+='<button data-c="'+c+'" style="background:'+c+'" class="'+(c.toLowerCase()===cur.toLowerCase()?"on":"")+'"></button>'});
+ h+='</div><label class="chk"><input type="checkbox" id="apd"'+(s.dark?" checked":"")+'> '+t("ap_dark")+'</label><div class="lbl">'+t("ap_size")+'</div><select id="aps">';
+ for(var i=0;i<4;i++)h+='<option value="'+i+'"'+((s.size==null?1:s.size)===i?" selected":"")+'>'+t("ap_s"+i)+'</option>';
+ h+='</select><label class="chk"><input type="checkbox" id="apb"'+(s.bold?" checked":"")+'> '+t("ap_bold")+'</label><label class="chk"><input type="checkbox" id="aph"'+(s.hc?" checked":"")+'> '+t("ap_hc")+'</label><button class="btn grey" id="apr">'+t("ap_reset")+'</button></div>';
+ var c=el(h);
+ c.querySelectorAll("[data-c]").forEach(function(b){b.onclick=function(){S.settings.color=b.dataset.c;save();render()}});
+ c.querySelector("#apd").onchange=function(){S.settings.dark=this.checked;save();render()};
+ c.querySelector("#aps").onchange=function(){S.settings.size=parseInt(this.value,10);save();render()};
+ c.querySelector("#apb").onchange=function(){S.settings.bold=this.checked;save();render()};
+ c.querySelector("#aph").onchange=function(){S.settings.hc=this.checked;save();render()};
+ c.querySelector("#apr").onclick=function(){["color","dark","size","bold","hc"].forEach(function(k){delete S.settings[k]});save();render()};
+ return c}
+
 function vNotes(m){
  var f=el('<div class="card form"><input id="nt" placeholder="'+t("title")+'"><textarea id="nb" placeholder="'+t("body")+'"></textarea><button class="btn">'+t("note_add")+'</button></div>');
  f.querySelector("button").onclick=function(){var a=f.querySelector("#nt").value.trim(),b=f.querySelector("#nb").value.trim();if(!a&&!b)return;S.notes.unshift({id:id(),title:a,body:b});save();render()};m.appendChild(f);
@@ -202,6 +238,7 @@ function vNotes(m){
   c.querySelector(".x").onclick=function(){if(ask()){S.notes=S.notes.filter(function(x){return x.id!==n.id});save();render()}};m.appendChild(c)})}
 
 function vSet(m){
+ m.appendChild(appearanceCard());
  var c=el('<div class="card form"><div class="big">'+t("brk_set")+'</div><div class="lbl">'+t("brk_start")+'</div><input id="bs" type="time" value="'+S.settings.breakStart+'"><div class="lbl">'+t("brk_min")+'</div><input id="bm" type="number" min="5" max="180" value="'+S.settings.breakMin+'"><div class="muted">'+t("brk_note")+'</div><button class="btn">'+t("save")+'</button></div>');
  c.querySelector("button").onclick=function(){S.settings.breakStart=c.querySelector("#bs").value||"11:00";S.settings.breakMin=Math.max(5,parseInt(c.querySelector("#bm").value,10)||30);save();render()};m.appendChild(c);
  var a=el('<div class="card form"><div class="big">Google sync</div><div class="muted" id="sy"></div></div>');

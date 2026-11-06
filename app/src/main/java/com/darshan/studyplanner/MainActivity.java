@@ -34,12 +34,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends Activity {
-    static final int CORAL = 0xFFFF5A5F, BG = 0xFFF6F5F7, INK = 0xFF1B1B1F, MUTED = 0xFF6B6B76;
+    static int CORAL = 0xFFFF5A5F, BG = 0xFFF6F5F7, INK = 0xFF1B1B1F, MUTED = 0xFF6B6B76;
     static final int GREEN = 0xFF1E9E63, AMBER = 0xFFE8A200, RED = 0xFFD64545, BLUE = 0xFF0F90FF;
     static final long FOCUS_MS = 25 * 60 * 1000L, BREAK_MS = 5 * 60 * 1000L;
 
     Store st;
-    LinearLayout content, nav;
+    LinearLayout content, nav, root, head;
     TextView title;
     Button langBtn;
     int tab = 0;
@@ -63,11 +63,11 @@ public class MainActivity extends Activity {
         Alarms.scheduleAll(this);
         getWindow().setStatusBarColor(CORAL);
 
-        LinearLayout root = new LinearLayout(this);
+        root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(BG);
 
-        LinearLayout head = Ui.row(this);
+        head = Ui.row(this);
         head.setBackgroundColor(CORAL);
         head.setPadding(Ui.dp(this, 16), Ui.dp(this, 12), Ui.dp(this, 12), Ui.dp(this, 12));
         title = Ui.text(this, "", 20, Color.WHITE, true);
@@ -124,6 +124,12 @@ public class MainActivity extends Activity {
     // ---------------------------------------------------------------- shell
 
     void render() {
+        Theme.load(st);
+        CORAL = Theme.accent; BG = Theme.bg; INK = Theme.ink; MUTED = Theme.muted;
+        root.setBackgroundColor(BG);
+        head.setBackgroundColor(CORAL);
+        getWindow().setStatusBarColor(CORAL);
+        nav.setBackgroundColor(Theme.card);
         title.setText(L.t("app"));
         langBtn.setText(L.t("lang_btn"));
         nav.removeAllViews();
@@ -270,7 +276,7 @@ public class MainActivity extends Activity {
         final EditText e = input(L.t("subject"), false);
         box.addView(e);
         final String[] date = {null};
-        final Button pick = Ui.button(this, L.t("pick_date"), 0xFFEFEDF2, INK, null);
+        final Button pick = Ui.button(this, L.t("pick_date"), Theme.grey, INK, null);
         LinearLayout.LayoutParams lp = Ui.match();
         lp.setMargins(0, Ui.dp(this, 12), 0, 0);
         box.addView(pick, lp);
@@ -361,7 +367,7 @@ public class MainActivity extends Activity {
                 r.addView(rx);
                 card.addView(r);
             }
-            Button add = Ui.button(this, "+  " + L.t("add_topic"), 0xFFEFEDF2, INK, v -> oneName(L.t("add_topic"), L.t("topic"), s -> {
+            Button add = Ui.button(this, "+  " + L.t("add_topic"), Theme.grey, INK, v -> oneName(L.t("add_topic"), L.t("topic"), s -> {
                 try {
                     JSONObject o = new JSONObject();
                     o.put("t", s);
@@ -399,7 +405,7 @@ public class MainActivity extends Activity {
         r.setGravity(Gravity.CENTER);
         startBtn = Ui.button(this, L.t(running ? "pause" : "start"), CORAL, Color.WHITE, v -> toggleTimer());
         r.addView(startBtn);
-        Button rs = Ui.button(this, L.t("reset"), 0xFFEFEDF2, INK, v -> resetTimer());
+        Button rs = Ui.button(this, L.t("reset"), Theme.grey, INK, v -> resetTimer());
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.setMargins(Ui.dp(this, 12), 0, 0, 0);
         r.addView(rs, lp);
@@ -589,8 +595,8 @@ public class MainActivity extends Activity {
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-        final Button bd = Ui.button(this, "", 0xFFEEEDF2, INK, null);
-        final Button bt = Ui.button(this, "", 0xFFEEEDF2, INK, null);
+        final Button bd = Ui.button(this, "", Theme.grey, INK, null);
+        final Button bt = Ui.button(this, "", Theme.grey, INK, null);
         final Runnable upd = () -> {
             bd.setText(new SimpleDateFormat("dd MMM yyyy", Locale.US).format(cal.getTime()));
             bt.setText(new SimpleDateFormat("HH:mm", Locale.US).format(cal.getTime()));
@@ -639,7 +645,7 @@ public class MainActivity extends Activity {
 
     void timeRow(LinearLayout card, String labelKey, final String key, int def, final boolean reschedule) {
         final int cur = st.getInt(key, def);
-        Button b = Ui.button(this, String.format(Locale.US, L.t(labelKey), hm(cur)), 0xFFEEEDF2, INK, v ->
+        Button b = Ui.button(this, String.format(Locale.US, L.t(labelKey), hm(cur)), Theme.grey, INK, v ->
                 new android.app.TimePickerDialog(this, (view, hh, mi) -> {
                     st.put(key, hh * 60 + mi);
                     st.save();
@@ -669,18 +675,19 @@ public class MainActivity extends Activity {
             }), lp);
             LinearLayout.LayoutParams lp2 = Ui.match();
             lp2.setMargins(0, Ui.dp(this, 8), 0, 0);
-            c.addView(Ui.button(this, L.t("sync_out"), 0xFFEEEDF2, INK, v -> { Sync.signOut(this); render(); }), lp2);
+            c.addView(Ui.button(this, L.t("sync_out"), Theme.grey, INK, v -> { Sync.signOut(this); render(); }), lp2);
         }
         content.addView(c);
     }
 
     void settings() {
+        content.addView(appearanceCard());
         syncCard();
         // break
         LinearLayout c1 = Ui.card(this);
         c1.addView(Ui.text(this, L.t("set_break"), 17, INK, true));
         timeRow(c1, "break_start", "breakStart", 11 * 60, true);
-        Button len = Ui.button(this, String.format(Locale.US, L.t("break_len"), st.getInt("breakMin", 30)), 0xFFEEEDF2, INK, v -> {
+        Button len = Ui.button(this, String.format(Locale.US, L.t("break_len"), st.getInt("breakMin", 30)), Theme.grey, INK, v -> {
             LinearLayout box = dialogBox();
             final EditText e = input(L.t("break_len_q"), false);
             e.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -723,8 +730,8 @@ public class MainActivity extends Activity {
         // permissions
         LinearLayout c4 = Ui.card(this);
         c4.addView(Ui.text(this, L.t("perms"), 17, INK, true));
-        Button pb = Ui.button(this, L.t("perm_btn"), 0xFFEEEDF2, INK, v -> askPerms());
-        Button ab = Ui.button(this, L.t("alarm_btn"), 0xFFEEEDF2, INK, v -> askAlarm());
+        Button pb = Ui.button(this, L.t("perm_btn"), Theme.grey, INK, v -> askPerms());
+        Button ab = Ui.button(this, L.t("alarm_btn"), Theme.grey, INK, v -> askAlarm());
         Button tb = Ui.button(this, L.t("test_ring"), CORAL, Color.WHITE, v -> {
             Intent i = new Intent(this, RingService.class).putExtra("secs", 5);
             startForegroundService(i);
@@ -782,5 +789,63 @@ public class MainActivity extends Activity {
                     .setPositiveButton(L.t("yes"), (d, w) -> requestPermissions(new String[]{"android.permission.ACCESS_BACKGROUND_LOCATION"}, 12))
                     .show();
         }
+    }
+
+    // ---------------------------------------------------------------- appearance
+
+    void setSetting(String key, Object val) {
+        try {
+            JSONObject s = st.getObj("settings");
+            if (s == null) s = new JSONObject();
+            if (val == null) s.remove(key); else s.put(key, val);
+            st.put("settings", s);
+        } catch (JSONException ignored) { }
+        st.save();
+        render();
+    }
+
+    View appearanceCard() {
+        LinearLayout c = Ui.card(this);
+        c.addView(Ui.text(this, L.t("ap"), 17, INK, true));
+        TextView lbl = Ui.text(this, L.t("ap_color"), 13, MUTED, false);
+        lbl.setPadding(0, Ui.dp(this, 8), 0, Ui.dp(this, 6));
+        c.addView(lbl);
+        LinearLayout sw = Ui.row(this);
+        for (final String col : Theme.COLORS) {
+            boolean on = Theme.parse(col) == Theme.accent;
+            Button b = Ui.button(this, on ? "\u2713" : "", Theme.parse(col), Color.WHITE, v -> setSetting("color", col));
+            b.setMinWidth(0);
+            b.setPadding(0, 0, 0, 0);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Ui.dp(this, 40), 1);
+            lp.setMargins(Ui.dp(this, 3), 0, Ui.dp(this, 3), 0);
+            sw.addView(b, lp);
+        }
+        c.addView(sw, Ui.match());
+        c.addView(toggle("ap_dark", Theme.dark, "dark"));
+        String[] sz = {"ap_s0", "ap_s1", "ap_s2", "ap_s3"};
+        Button sb = Ui.button(this, String.format(Locale.US, L.t("ap_size"), L.t(sz[Theme.size])), Theme.grey, INK, v -> setSetting("size", (Theme.size + 1) % 4));
+        LinearLayout.LayoutParams l1 = Ui.match();
+        l1.setMargins(0, Ui.dp(this, 8), 0, 0);
+        c.addView(sb, l1);
+        c.addView(toggle("ap_bold", Theme.bold, "bold"));
+        c.addView(toggle("ap_hc", Theme.hc, "hc"));
+        Button rs = Ui.button(this, L.t("ap_reset"), Theme.grey, INK, v -> {
+            try {
+                JSONObject s = st.getObj("settings");
+                if (s != null) for (String k : new String[]{"color", "dark", "size", "bold", "hc"}) s.remove(k);
+            } catch (Exception ignored) { }
+            st.save();
+            render();
+        });
+        c.addView(rs, l1);
+        return c;
+    }
+
+    Button toggle(String labelKey, final boolean on, final String key) {
+        Button b = Ui.button(this, String.format(Locale.US, L.t(labelKey), L.t(on ? "ap_on" : "ap_off")), on ? CORAL : Theme.grey, on ? Color.WHITE : INK, v -> setSetting(key, !on));
+        LinearLayout.LayoutParams lp = Ui.match();
+        lp.setMargins(0, Ui.dp(this, 8), 0, 0);
+        b.setLayoutParams(lp);
+        return b;
     }
 }
