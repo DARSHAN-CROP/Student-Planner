@@ -4,13 +4,14 @@ Student planner in Gujarati and English by Darshankumar Savsani (DARSHAN CORPORA
 
 **Website (works on phone and PC, no install):** https://1darshankumarsavsani-blip.github.io/Student-Planner/
 
-## Latest: V3.0 (Android + website)
+## Latest: V3.1 (Android + website)
 
-- New **Timetable**: add classes per weekday, shows what is on now and up next.
-- New **Attendance**: present/absent counters per subject, target % (default 75) and how many classes you need or can miss.
-- New **Marks + CGPA**: marks per subject, overall percentage and CGPA from credits and grade points.
+- New in 3.1: **Appearance** in Settings (theme colour, dark mode, text size, bold text, high contrast), on the website and in the Android app.
+- New in 3.0: **Timetable**: add classes per weekday, shows what is on now and up next.
+- **Attendance**: present/absent counters per subject, target % (default 75) and how many classes you need or can miss.
+- **Marks + CGPA**: marks per subject, overall percentage and CGPA from credits and grade points.
 - In the Android app these are under the **More** tab. Data syncs with the website through Google sync.
-- Download `Student_Planner_V3.apk` from the latest release and allow "install unknown apps". It installs over older versions and keeps your data.
+- Download `Student_Planner_V3.1.apk` from the latest release and allow "install unknown apps". It installs over older versions and keeps your data.
 - Windows: open the website in Edge or Chrome (or use the small launcher `Student_Planner_Windows.exe` from release v2.0).
 
 Honest note: tested with a simulated Android 14 phone and a headless browser. The new Android screens still need a check on a real phone. Battery saver can delay rings.
