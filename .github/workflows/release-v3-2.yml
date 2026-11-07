@@ -1,0 +1,19 @@
+name: Publish V3.2 release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release v3.2 with the APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v3.2 >/dev/null 2>&1 || gh release create v3.2 --title "Student Planner V3.2" --notes "V3.2: iPhone-camera style bottom menu (selected tab in the centre, scroll or swipe to change, swipe the page too) and a Timer where you set your own focus and break minutes (presets 15/3, 25/5, 45/10, 60/15). Website timer also customisable. Installs over older versions and keeps your data. Tested with a simulated Android 14 only; check on your phone."
+          gh release upload v3.2 release/Student_Planner_V3.2.apk --clobber
