@@ -18,6 +18,12 @@ final class L {
         p("sync_out", "Sign out", "Sign out");
         p("sync_wait", "sync થઈ રહ્યું છે…", "Syncing…");
         p("sync_signed", "Sign in થઈ ગયું ✅", "Signed in ✅");
+        p("t_custom", "તમારો પોતાનો ટાઇમર સેટ કરો", "Set your own timer");
+        p("t_focus_min", "અભ્યાસ (મિનિટ)", "Focus (minutes)");
+        p("t_break_min", "આરામ (મિનિટ)", "Break (minutes)");
+        p("t_min", "મિનિટ", "min");
+        p("t_stop_first", "પહેલા ટાઇમર રોકો કે રીસેટ કરો", "Pause or reset the timer first");
+        p("t_tip", "+ / − થી બદલો, અથવા આંકડા પર દબાવી જાતે લખો. ઉપર તૈયાર સેટ: અભ્યાસ/આરામ.", "Use + / − or tap the number to type it. Presets: focus/break.");
         p("app", "વિદ્યાર્થી પ્લાનર", "Student Planner");
         p("tab_more", "વધુ", "More");
         p("tab_tt", "ટાઇમટેબલ", "Timetable");
@@ -103,7 +109,7 @@ final class L {
         p("reset", "ફરીથી", "Reset");
         p("sessions", "આજના અભ્યાસ સેશન: %d", "Study sessions today: %d");
         p("timer_note", "ટાઇમર ચાલુ હોય ત્યારે app બંધ ન કરશો.", "Keep the app open while the timer runs.");
-        p("focus_done", "શાબાશ! 25 મિનિટ પૂરી. હવે 5 મિનિટ આરામ.", "Well done! 25 minutes finished. Take a 5 minute break.");
+        p("focus_done", "શાબાશ! %d મિનિટ પૂરી. હવે %d મિનિટ આરામ.", "Well done! %d minutes finished. Take a %d minute break.");
         p("break_done", "આરામ પૂરો. ફરી અભ્યાસ શરૂ કરો.", "Break over. Back to studying.");
         p("add_note", "નોંધ ઉમેરો", "Add note");
         p("edit_note", "નોંધ સુધારો", "Edit note");

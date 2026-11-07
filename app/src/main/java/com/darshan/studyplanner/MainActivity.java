@@ -36,16 +36,20 @@ import org.json.JSONObject;
 public class MainActivity extends Activity {
     static int CORAL = 0xFFFF5A5F, BG = 0xFFF6F5F7, INK = 0xFF1B1B1F, MUTED = 0xFF6B6B76;
     static final int GREEN = 0xFF1E9E63, AMBER = 0xFFE8A200, RED = 0xFFD64545, BLUE = 0xFF0F90FF;
-    static final long FOCUS_MS = 25 * 60 * 1000L, BREAK_MS = 5 * 60 * 1000L;
+    
 
     Store st;
+    long focusMs() { return Math.max(1, Math.min(180, st.getInt("focusMin", 25))) * 60000L; }
+    long breakMs() { return Math.max(1, Math.min(60, st.getInt("breakMin", 5))) * 60000L; }
     LinearLayout content, nav, root, head;
     TextView title;
     Button langBtn;
     int tab = 0;
 
     // timer state lives in the activity so it keeps running while you look at other tabs
-    long remain = FOCUS_MS;
+    long remain = 25 * 60 * 1000L;
+    CamNav cam;
+    android.view.GestureDetector swipe;
     boolean running = false, focusMode = true;
     CountDownTimer cdt;
     TextView timerView;
@@ -58,6 +62,7 @@ public class MainActivity extends Activity {
         Sync.handleIntent(this, getIntent());
         Sync.onChanged = () -> { st = new Store(MainActivity.this); L.gu = st.lang().equals("gu"); render(); };
         L.gu = st.lang().equals("gu");
+        remain = focusMs();
         tab = getIntent().getIntExtra("tab", 0);
         RingService.channels(this);
         Alarms.scheduleAll(this);
@@ -84,12 +89,25 @@ public class MainActivity extends Activity {
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
         content.setPadding(Ui.dp(this, 14), Ui.dp(this, 14), Ui.dp(this, 14), Ui.dp(this, 14));
+        swipe = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener() {
+            @Override public boolean onFling(android.view.MotionEvent a, android.view.MotionEvent b, float vx, float vy) {
+                if (a == null || b == null) return false;
+                float dx = b.getX() - a.getX(), dy = b.getY() - a.getY();
+                if (Math.abs(dx) < Ui.dp(MainActivity.this, 90) || Math.abs(dx) < Math.abs(dy) * 2f || Math.abs(vx) < 600) return false;
+                int nt = tab + (dx < 0 ? 1 : -1);
+                if (nt < 0 || nt > 6) return false;
+                tab = nt;
+                render();
+                return true;
+            }
+        });
+        sv.setOnTouchListener((v, ev) -> { swipe.onTouchEvent(ev); return false; });
         sv.addView(content, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         root.addView(sv, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
 
         nav = Ui.row(this);
         nav.setBackgroundColor(Color.WHITE);
-        nav.setPadding(Ui.dp(this, 6), Ui.dp(this, 6), Ui.dp(this, 6), Ui.dp(this, 6));
+        nav.setPadding(0, Ui.dp(this, 6), 0, Ui.dp(this, 6));
         root.addView(nav, Ui.match());
 
         setContentView(root);
@@ -132,19 +150,16 @@ public class MainActivity extends Activity {
         nav.setBackgroundColor(Theme.card);
         title.setText(L.t("app"));
         langBtn.setText(L.t("lang_btn"));
-        nav.removeAllViews();
         String[] keys = {"tab_exams", "tab_syllabus", "tab_homework", "tab_timer", "tab_notes", "tab_more", "tab_settings"};
-        for (int i = 0; i < keys.length; i++) {
-            final int idx = i;
-            boolean sel = i == tab;
-            Button x = Ui.button(this, L.t(keys[i]), sel ? CORAL : Color.TRANSPARENT, sel ? Color.WHITE : MUTED, v -> { tab = idx; render(); });
-            x.setTextSize(11);
-            x.setMaxLines(1);
-            x.setPadding(Ui.dp(this, 1), Ui.dp(this, 8), Ui.dp(this, 1), Ui.dp(this, 8));
-            LinearLayout.LayoutParams lp = Ui.weight(1);
-            lp.setMargins(Ui.dp(this, 3), 0, Ui.dp(this, 3), 0);
-            nav.addView(x, lp);
+        String[] labels = new String[keys.length];
+        for (int i = 0; i < keys.length; i++) labels[i] = L.t(keys[i]);
+        if (cam == null) {
+            cam = new CamNav(this, keys.length, i -> { tab = i; render(); });
+            nav.removeAllViews();
+            nav.addView(cam, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 46)));
         }
+        cam.select(tab);
+        cam.style(labels, CORAL, MUTED);
         content.removeAllViews();
         timerView = null;
         startBtn = null;
@@ -413,6 +428,7 @@ public class MainActivity extends Activity {
         rl.setMargins(0, Ui.dp(this, 20), 0, 0);
         card.addView(r, rl);
         content.addView(card);
+        content.addView(timerSetup());
         TextView s = Ui.text(this, String.format(Locale.US, L.t("sessions"), st.sessionsToday()), 16, INK, true);
         s.setGravity(Gravity.CENTER);
         content.addView(s, Ui.match());
@@ -420,6 +436,82 @@ public class MainActivity extends Activity {
         n.setGravity(Gravity.CENTER);
         n.setPadding(0, Ui.dp(this, 8), 0, 0);
         content.addView(n, Ui.match());
+    }
+
+
+    LinearLayout timerSetup() {
+        LinearLayout c = Ui.card(this);
+        c.addView(Ui.text(this, L.t("t_custom"), 16, INK, true));
+        c.addView(stepRow("focusMin", "t_focus_min", 25, 1, 180, 5));
+        c.addView(stepRow("breakMin", "t_break_min", 5, 1, 60, 1));
+        LinearLayout pr = Ui.row(this);
+        int[][] pre = {{15, 3}, {25, 5}, {45, 10}, {60, 15}};
+        for (int[] p : pre) {
+            final int f = p[0], b = p[1];
+            boolean sel = st.getInt("focusMin", 25) == f && st.getInt("breakMin", 5) == b;
+            Button x = Ui.button(this, f + "/" + b, sel ? CORAL : Theme.grey, sel ? Color.WHITE : INK, v -> { if (!running) setTimes(f, b); else Toast.makeText(this, L.t("t_stop_first"), Toast.LENGTH_SHORT).show(); });
+            x.setTextSize(13);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, Ui.dp(this, 44), 1);
+            lp.setMargins(Ui.dp(this, 3), Ui.dp(this, 8), Ui.dp(this, 3), Ui.dp(this, 8));
+            pr.addView(x, lp);
+        }
+        c.addView(pr, Ui.match());
+        c.addView(Ui.text(this, L.t("t_tip"), 12, MUTED, false));
+        return c;
+    }
+
+    LinearLayout stepRow(final String key, String label, final int def, final int lo, final int hi, final int step) {
+        LinearLayout r = Ui.row(this);
+        r.setPadding(0, Ui.dp(this, 8), 0, 0);
+        r.addView(Ui.text(this, L.t(label), 15, INK, false), Ui.weight(1));
+        final int cur = st.getInt(key, def);
+        Button m = Ui.button(this, "−", Theme.grey, INK, v -> bump(key, def, lo, hi, -step));
+        Button val = Ui.button(this, cur + " " + L.t("t_min"), Color.TRANSPARENT, CORAL, v -> typeValue(key, def, lo, hi, label));
+        Button p = Ui.button(this, "+", Theme.grey, INK, v -> bump(key, def, lo, hi, step));
+        m.setMinimumWidth(Ui.dp(this, 48)); p.setMinimumWidth(Ui.dp(this, 48));
+        m.setPadding(0, 0, 0, 0); p.setPadding(0, 0, 0, 0);
+        r.addView(m, new LinearLayout.LayoutParams(Ui.dp(this, 48), ViewGroup.LayoutParams.WRAP_CONTENT));
+        r.addView(val, new LinearLayout.LayoutParams(Ui.dp(this, 96), ViewGroup.LayoutParams.WRAP_CONTENT));
+        r.addView(p, new LinearLayout.LayoutParams(Ui.dp(this, 48), ViewGroup.LayoutParams.WRAP_CONTENT));
+        return r;
+    }
+
+    void bump(String key, int def, int lo, int hi, int d) {
+        if (running) { Toast.makeText(this, L.t("t_stop_first"), Toast.LENGTH_SHORT).show(); return; }
+        int v = Math.max(lo, Math.min(hi, st.getInt(key, def) + d));
+        st.put(key, v);
+        applyTimes();
+    }
+
+    void typeValue(final String key, final int def, final int lo, final int hi, String label) {
+        if (running) { Toast.makeText(this, L.t("t_stop_first"), Toast.LENGTH_SHORT).show(); return; }
+        LinearLayout box = dialogBox();
+        final EditText e = input(lo + "–" + hi, false);
+        e.setInputType(InputType.TYPE_CLASS_NUMBER);
+        e.setText(String.valueOf(st.getInt(key, def)));
+        box.addView(e);
+        AlertDialog dlg = new AlertDialog.Builder(this).setTitle(L.t(label)).setView(box)
+                .setPositiveButton(L.t("save"), null).setNegativeButton(L.t("cancel"), null).create();
+        dlg.setOnShowListener(x -> dlg.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            int n;
+            try { n = Integer.parseInt(e.getText().toString().trim()); } catch (Exception ex) { n = -1; }
+            if (n < lo || n > hi) { Toast.makeText(this, lo + "–" + hi + " " + L.t("t_min"), Toast.LENGTH_SHORT).show(); return; }
+            dlg.dismiss();
+            st.put(key, n);
+            applyTimes();
+        }));
+        dlg.show();
+    }
+
+    void setTimes(int f, int b) { st.put("focusMin", f); st.put("breakMin", b); applyTimes(); }
+
+    void applyTimes() {
+        st.save();
+        if (cdt != null) cdt.cancel();
+        running = false;
+        remain = focusMode ? focusMs() : breakMs();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        render();
     }
 
     void toggleTimer() {
@@ -443,12 +535,12 @@ public class MainActivity extends Activity {
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 if (focusMode) {
                     st.addSession();
-                    Toast.makeText(MainActivity.this, L.t("focus_done"), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, String.format(Locale.US, L.t("focus_done"), (int) (focusMs() / 60000L), (int) (breakMs() / 60000L)), Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(MainActivity.this, L.t("break_done"), Toast.LENGTH_LONG).show();
                 }
                 focusMode = !focusMode;
-                remain = focusMode ? FOCUS_MS : BREAK_MS;
+                remain = focusMode ? focusMs() : breakMs();
                 if (tab == 3) render();
             }
         }.start();
@@ -458,7 +550,7 @@ public class MainActivity extends Activity {
         if (cdt != null) cdt.cancel();
         running = false;
         focusMode = true;
-        remain = FOCUS_MS;
+        remain = focusMs();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         render();
     }
