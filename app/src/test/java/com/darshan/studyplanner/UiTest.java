@@ -61,7 +61,17 @@ public class UiTest {
         shot(a, "2_settings_gu.png");
         L.gu = false; a.tab = 2; a.render();
         shot(a, "3_homework_en.png");
-        a.tab = 3; a.render();
+        L.gu = true; a.tab = 3; a.render();
+        shot(a, "4_timer_gu.png");
+        a.setTimes(45, 10);
+        assertEquals(45 * 60000L, a.remain);
+        assertEquals(10 * 60000L, a.breakMs());
+        a.bump("focusMin", 25, 1, 180, 5);
+        assertEquals(50 * 60000L, a.remain);
+        assertEquals(3, a.cam.nearest() >= 0 ? 3 : -1);
+        a.tab = 5; a.render();
+        shot(a, "5_more_gu.png");
+        L.gu = false; a.tab = 3; a.render();
         a.startBtn.performClick();
         assertTrue(a.running);
         a.resetTimer();
